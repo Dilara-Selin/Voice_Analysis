@@ -144,7 +144,7 @@ class AudioRecorder:
     def process_recording(self):
         # Ses dosyasını işle ve tahmin et
         file = "mikrofon_kayit.wav"
-        transcript, kelime_sayisi = self.getWords(file)
+        transcript, kelime_sayisi = self.get_words(file)
         tahmin = self.speaker_identification(file)
         
         # Ses metnini İngilizceye çevir
@@ -159,7 +159,7 @@ class AudioRecorder:
         # UI'yi güncelle
         self.update_info_text(tahmin, transcript, kelime_sayisi, emotion_percentages, topic)
 
-    def getWords(self, file):
+    def get_words(self, file):
         def transcribe_audio(audio_file_path):
             recognizer = sr.Recognizer()
 
