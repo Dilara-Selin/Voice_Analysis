@@ -8,10 +8,8 @@ import speech_recognition as sr
 from pydub import AudioSegment
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-import joblib
 import librosa
 from tensorflow.keras.models import load_model  
-import threading
 from deep_translator import GoogleTranslator 
 from transformers import pipeline
 
@@ -71,11 +69,11 @@ class AudioRecorder:
         model_kayit_yolu = 'ses_tanima_modeli.keras'
         self.model = load_model(model_kayit_yolu)
 
-        self.sinif_isimleri = ['Guzel', 'Kader', 'Rumeysa', 'Selin']
+        self.sinif_isimleri = ['Aysu', 'Dilara', 'Guzel', 'Kader']
 
         # Mikrofondan ses almak için gerekli parametreler
         self.saniye_basina_ornek = 44100  # Örnekleme hızı (örneğin, 44100 Hz)
-        self.saniye = 5  # 5 saniyelik ses al
+        self.saniye = 5  #  saniyelik ses al
         self.kanal_sayisi = 1  # Tek kanallı ses
         
         # Zero-shot sınıflandırma için transformer modeli
@@ -144,7 +142,7 @@ class AudioRecorder:
     def process_recording(self):
         # Ses dosyasını işle ve tahmin et
         file = "mikrofon_kayit.wav"
-        transcript, kelime_sayisi = self.get_words(file)
+        transcript, kelime_sayisi = self.getWords(file)
         tahmin = self.speaker_identification(file)
         
         # Ses metnini İngilizceye çevir
@@ -159,7 +157,7 @@ class AudioRecorder:
         # UI'yi güncelle
         self.update_info_text(tahmin, transcript, kelime_sayisi, emotion_percentages, topic)
 
-    def get_words(self, file):
+    def getWords(self, file):
         def transcribe_audio(audio_file_path):
             recognizer = sr.Recognizer()
 
@@ -212,12 +210,36 @@ class AudioRecorder:
         emotions = {result['label']: result['score'] for result in results[0]}
         total = sum(emotions.values())
         percentages = {emotion: (score / total) * 100 for emotion, score in emotions.items()}
-        return percentages
+            # Türkçeye çevirmek için bir sözlük
+        emotion_translation = {
+            "joy": "neşe",
+            "anger": "öfke",
+            "sadness": "üzüntü",
+            "fear": "korku",
+            "surprise": "şaşkınlık",
+            "love": "aşk"
+        }
+        
+        # Duyguları Türkçe olarak döndür
+        translated_percentages = {emotion_translation.get(emotion, emotion): percentage for emotion, percentage in percentages.items()}
+        return translated_percentages
 
     def analyze_topic(self, text):
         topics = ["sport", "technology", "health", "art", "weather", "feelings"]
         result = self.topic_classifier(text, candidate_labels=topics)
-        return result['labels'][0], result['scores'][0]
+           # Konu başlıklarını Türkçeye çevir
+        topic_translation = {
+            "sport": "spor",
+            "technology": "teknoloji",
+            "health": "sağlık",
+            "art": "sanat",
+            "weather": "hava durumu",
+            "feelings": "duygular"
+        }
+        
+        # Konuyu Türkçe olarak döndür
+        return topic_translation.get(result['labels'][0], result['labels'][0]), result['scores'][0]
+   
 
     def plot_histogram(self):
         audio_data = np.concatenate(self.frames, axis=0)
